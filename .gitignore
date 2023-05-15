@@ -13,3 +13,8 @@ TCOTC_SORTED
 *.aiff
 *.mp3
 *.m4a
+
+
+# Added by cargo
+
+/target
