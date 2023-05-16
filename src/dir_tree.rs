@@ -1,10 +1,17 @@
 use crate::app_config::{AppConfig, Classification};
-use trees::Tree;
 use std::fmt;
+use trees::{Node, Tree};
 
 pub struct DirTree {
     tree: Tree<String>,
 }
+
+#[derive(Debug)]
+pub enum DirTreeError {
+    CorruptedPath,
+}
+
+pub type DirTreeResult = Result<(), DirTreeError>;
 
 impl DirTree {
     pub fn from_config(config: &AppConfig) -> Self {
@@ -36,6 +43,40 @@ impl DirTree {
         }
 
         parent
+    }
+
+    pub fn put_into(&mut self, path: Vec<String>, filename: String) -> DirTreeResult {
+        let mut path = path.clone();
+        path.reverse();
+
+        let target_node = DirTree::find_mut(&mut path, self.tree.root_mut().get_mut())
+            .ok_or(DirTreeError::CorruptedPath);
+
+        match target_node {
+            Ok(v) => Ok(v.push_back(Tree::new(filename))),
+            Err(e) => Err(e),
+        }
+    }
+
+    fn find_mut<'a>(
+        path: &mut Vec<String>,
+        node: &'a mut Node<String>,
+    ) -> Option<&'a mut Node<String>> {
+        if path.is_empty() {
+            Some(node)
+        } else {
+            let next_target_dir = path.pop().unwrap();
+
+            let found = match node
+                .iter_mut()
+                .find(|child| *child.data() == next_target_dir)
+            {
+                Some(v) => v.get_mut(),
+                None => return None,
+            };
+
+            DirTree::find_mut(path, found)
+        }
     }
 }
 
