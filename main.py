@@ -6,14 +6,28 @@ import re
 from collections.abc import Iterator
 
 class TagExtractor:
-    ALLOWED_ADSR = ["ATTACK", "DECAY", "SUSTAIN", "RELEASE"]
-    ALLOWED_CLARITY = ["DARK", "NEUTRAL", "BRIGHT"]
-    ALLOWED_GENRE = ["TECHNO", "TRANCE", "HOUSE", "ELECTRO", "DISCO", "ROCK"]
+    ALLOWED_ENERGIES = ["1", "2", "3"]
+    ALLOWED_TAGS = {
+            "a": "TRANCE",
+            "b": "BREAKS",
+            "d": "DISCO",
+            "e": "ELECTRO",
+            "f": "FUNK",
+            "g": "DEEPHOUSE",
+            "h": "HOUSE",
+            "i": "TECHHOUSE",
+            "o": "ITALO",
+            "r": "ROCK",
+            "t": "TECHNO",
+            }
 
     class ParsingException(Exception):
         pass
 
     class UnknownClassifierException(Exception):
+        pass
+
+    class EmptyCommentException(Exception):
         pass
 
     class FileException(Exception):
@@ -70,30 +84,37 @@ class TagExtractor:
             comments = tags.getall('COMM')
             for comm in comments:
                 comm_text = comm.text[0]
-                if self.assert_classifiers(comm_text.upper(), raise_exception=False):
+                if self.assert_classifiers(comm_text, raise_exception=False):
                     comment = comm_text
 
-        self.assert_classifiers(comment.upper())
+        self.assert_classifiers(comment)
 
-        return comment.upper()
+        return comment
 
     def assert_classifiers(self, comment: str, raise_exception: bool = True) -> bool:
-        if not re.match(r'[a-zA-Z]+,[a-zA-Z]+,[a-zA-Z]+', comment):
+        if not comment:
+            if raise_exception:
+                raise TagExtractor.EmptyCommentException(
+                    "Empty comment for file: {}".format(self.file_path)
+                    )
+            return False
+
+        if not re.match(r'\d,[a-z;]', comment):
             if raise_exception:
                 raise TagExtractor.ParsingException(
                     "Incorrect comment '{}' for file: {}".format(comment, self.file_path))
             return False
 
-        classifiers = comment.split(',')
+        energy_level = comment.split(',')[0]
+        classifiers = comment.split(',')[1].split(';')
 
-        adsr = classifiers[0] in TagExtractor.ALLOWED_ADSR
-        clarity = classifiers[1] in TagExtractor.ALLOWED_CLARITY
-        genre = classifiers[2] in TagExtractor.ALLOWED_GENRE
+        assert_energy_level = energy_level in TagExtractor.ALLOWED_ENERGIES
+        assert_classifiers = all([c in TagExtractor.ALLOWED_TAGS.keys() for c in classifiers])
 
-        if not (adsr and clarity and genre):
+        if not assert_energy_level or not assert_classifiers:
             if raise_exception:
                 raise TagExtractor.UnknownClassifierException(
-                    "'Unknown classifier in {}' for file: {}".format(comment, self.file_path))
+                    "'Unknown energy_level or tag in {}' for file: {}".format(comment, self.file_path))
             return False
         
         return True
@@ -110,12 +131,15 @@ class AudioFile:
             base = os.path.basename(path)
             title, _ = os.path.splitext(base)
             self.title = title
-    
-    def get_classifiers(self, comment: str) -> list[str]:
-        return self.comment.split(',')
 
-    def target_dir(self) -> str:
-        return "/".join(self.get_classifiers(self.comment))
+    def get_energy_level(self) -> str:
+        return self.comment.split(',')[0]
+    
+    def get_classifiers(self) -> list[str]:
+        return sorted(self.comment.split(',')[1].split(';'))
+
+    def target_dirs(self) -> list[str]:
+        return [TagExtractor.ALLOWED_TAGS[c] for c in self.get_classifiers()]
 
 def get_files(dir_path: str) -> Iterator[AudioFile]:
     # iterate directory
@@ -133,6 +157,8 @@ def get_files(dir_path: str) -> Iterator[AudioFile]:
                 print(e)
             except TagExtractor.UnknownClassifierException as e:
                 print(e)
+            except TagExtractor.EmptyCommentException as e:
+                pass
 
 def main():
     dir_path = r'./TCOTC/'
@@ -141,36 +167,40 @@ def main():
     shutil.rmtree(dir_path_target, ignore_errors=True)
 
     for file in get_files(dir_path):
+        for target_dir in file.target_dirs():
+            dst_dir = os.path.join(dir_path_target, target_dir)
+            os.makedirs(dst_dir, exist_ok=True)
 
-        dst_dir = os.path.join(dir_path_target, file.target_dir())
-        os.makedirs(dst_dir, exist_ok=True)
+            src = file.path
 
-        src = file.path
+            _, file_extension = os.path.splitext(file.path)
+            file_target_path = "{}{} {} - {}".format(
+                    file.get_energy_level(),
+                    ''.join(file.get_classifiers()),
+                    file.title,
+                    file.artist)
 
-        _, file_extension = os.path.splitext(file.path)
-        file_target_path = "{} - {}".format(file.title, file.artist)
+            # replace strange characters with '?'
+            file_target_path = file_target_path.encode('ascii', 'replace').decode('utf-8')
+            # replace not allowed characters
+            file_target_path = file_target_path.replace("<", "!")
+            file_target_path = file_target_path.replace(">", "!")
+            file_target_path = file_target_path.replace(":", "!")
+            file_target_path = file_target_path.replace('"', "!")
+            file_target_path = file_target_path.replace('/', "!")
+            file_target_path = file_target_path.replace('|', "!")
+            file_target_path = file_target_path.replace('\\', "!")
+            file_target_path = file_target_path.replace('?', "!")
+            file_target_path = file_target_path.replace('*', "!")
+            # crop file be below maximum allowed length by OS
+            file_target_path = file_target_path[:250]
+            # add extension
+            file_target_path += file_extension
 
-        # replace strange characters with '?'
-        file_target_path = file_target_path.encode('ascii', 'replace').decode('utf-8')
-        # replace not allowed characters
-        file_target_path = file_target_path.replace("<", "!")
-        file_target_path = file_target_path.replace(">", "!")
-        file_target_path = file_target_path.replace(":", "!")
-        file_target_path = file_target_path.replace('"', "!")
-        file_target_path = file_target_path.replace('/', "!")
-        file_target_path = file_target_path.replace('|', "!")
-        file_target_path = file_target_path.replace('\\', "!")
-        file_target_path = file_target_path.replace('?', "!")
-        file_target_path = file_target_path.replace('*', "!")
-        # crop file be below maximum allowed length by OS
-        file_target_path = file_target_path[:250]
-        # add extension
-        file_target_path += file_extension
+            dst = os.path.join(dst_dir, file_target_path)
 
-        dst = os.path.join(dst_dir, file_target_path)
-
-        print("copy: ", src, dst)
-        shutil.copy(src, dst)
+            #print("copy: ", src, dst)
+            shutil.copy(src, dst)
 
 if __name__ == "__main__":
     main()
