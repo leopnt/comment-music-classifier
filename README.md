@@ -20,19 +20,18 @@ source env/bin/activate
 pip install -r requirements
 ```
 
-- put comment in music metadata tags: `<ADSR>,<CLARITY>,<GENRE>`.
+- put comment in music metadata tags: `<ENERGY>,<TAG1>;[TAG2];[TAG3]` using software of choice.
 Possible values (see `TagExtractor` class) are
-    - ADSR: `attack, decay, release, sustain`
-    - CLARITY: `dark, neutral, bright`
-    - GENRE: `rock, disco, house, trance, techno, electro`
-    So for example an audio file with tag comment `sustain,neutral,trance` will be moved to folder `SUSTAIN/NEUTRAL/TRANCE`
+    - ENERGY: `1, 2, 3`
+    - TAGS: e.g. `h, o, t` as per 'house' 'italo' 'techno'
+    So for example an audio file with tag comment `2,h;d` will be moved to folders `HOUSE` and `DISCO` and renamed `2dh <title> <artist>.<file type>`. Note that tags are alphabetically re-ordered in filename. It matters to have similar tracks close to each other in tracklist when sorting by filename.
 
 - move music files to a folder named `TCOTC` beside `main.py`. All music should be in `TCOTC` without subfolders.
 
 - run script
 
 ```
-python main.py
+python main.py > log.txt
 ```
 
 - Sorted music are in folder `TCOTC_SORTED/`
