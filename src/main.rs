@@ -1,23 +1,19 @@
 use std::fs::File;
 use std::io::Read;
 
-use std::fmt;
-
 use std::time::Instant;
 
 #[derive(Debug)]
 struct Chunk {
     id: String,
     size: usize,
-    data: Vec<u8>,
 }
 
 fn read_aiff_chunk(data: &Vec<u8>, pos: usize) -> Result<Chunk, Box<dyn std::error::Error>> {
     let id: String = String::from_utf8(data[pos..pos + 4].to_vec())?;
     let size: usize = i32::from_be_bytes(data[pos + 4..pos + 8].try_into()?) as usize;
-    let data: Vec<u8> = data[pos + 8..pos + 8 + size as usize].to_vec();
 
-    Ok(Chunk { id, size, data })
+    Ok(Chunk { id, size })
 }
 
 fn main() -> std::io::Result<()> {
@@ -26,7 +22,6 @@ fn main() -> std::io::Result<()> {
     let mut file = File::open("/Users/leopnt/Music/TCOTC/01 View Source.aiff")?;
     let mut data = Vec::new();
     file.read_to_end(&mut data)?;
-
 
     let mut cursor: usize = 0;
 

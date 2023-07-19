@@ -1,0 +1,10 @@
+Incorrect comment '3;f' for file: /Users/leopnt/Music/TCOTC/Les Rita Mitsouko - Marcia Baïla (Audio officiel).m4a
+/Users/leopnt/Music/TCOTC/.DS_Store
+Incorrect comment '2;f;d' for file: /Users/leopnt/Music/TCOTC/Could Heaven Ever Be Like This.m4a
+'Unknown energy_level or tag in 2,hd' for file: /Users/leopnt/Music/TCOTC/Immersif - Malmousque Groove.m4a
+Incorrect comment '2;h;g' for file: /Users/leopnt/Music/TCOTC/plaisir de france americaine 2003 pro zak trax.m4a
+Incorrect comment '2;g' for file: /Users/leopnt/Music/TCOTC/Knee Deep - The Limit (2000).m4a
+Incorrect comment 'sustain,dark,techno' for file: /Users/leopnt/Music/TCOTC/Bass In Your Chest.m4a
+Incorrect comment 'R1,g' for file: /Users/leopnt/Music/TCOTC/Tera (Flash Atkins Mix).m4a
+Incorrect comment 'sustain,dark,trance' for file: /Users/leopnt/Music/TCOTC/Non Verbal Language (Original Mix).m4a
+Incorrect comment 'sustain,neutral,techno' for file: /Users/leopnt/Music/TCOTC/Garp - Clue In (Techno 2001).m4a
