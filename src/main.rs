@@ -39,16 +39,20 @@ fn build_track_db(entries: fs::ReadDir) -> Vec<Track> {
     tracks
 }
 
+fn build_custom_track_name(track: &Track) -> String {
+    format!("{} {} - {}.{}", track.custom_comment, track.title, track.artist, track.file_extension)
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let start_time = Instant::now();
 
-    let source_entries = fs::read_dir("/Users/leopnt/Music/TCOTC").unwrap();
+    let source_entries = fs::read_dir("/Users/leopnt/Desktop/TCOTC_TEST").unwrap();
     //let target_entries = fs::read_dir("/Users/leopnt/Desktop/test-comment-music").unwrap();
 
     let source_tracks = build_track_db(source_entries);
 
     for track in source_tracks.iter() {
-        println!("{:?}", track);
+        println!("{}", build_custom_track_name(track));
     }
 
     println!("Count {}", source_tracks.len());

@@ -49,14 +49,14 @@ fn parse_custom_comment(comment: &String) -> Result<Vec<String>, Box<dyn Error>>
 
 #[derive(Debug, Clone)]
 pub struct Track {
-    title: String,
-    artist: String,
-    custom_comment: String,
-    src_path: String,
+    pub title: String,
+    pub artist: String,
+    pub custom_comment: String,
+    pub file_extension: String,
 }
 
 impl Track {
-    pub fn from(tag: &Tag) -> Result<Self, Box<dyn Error>> {
+    pub fn from(tag: &Tag, file_extension: String) -> Result<Self, Box<dyn Error>> {
         let title = tag.title().ok_or("No title ID3 tag found")?.to_string();
         let artist = tag.artist().ok_or("No artist ID3 tag found")?.to_string();
 
@@ -72,13 +72,11 @@ impl Track {
             return Err(Box::new(CustomCommentEmptyError));
         }
 
-        let src_path = "".to_string();
-
         Ok(Track {
             title,
             artist,
             custom_comment,
-            src_path,
+            file_extension
         })
     }
 }
