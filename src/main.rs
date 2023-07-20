@@ -19,8 +19,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let entry = entry.as_ref().unwrap();
 
         match get_file_extension(entry).as_deref() {
-            Some("aiff") => process_aiff(entry),
-            Some("aif") => process_aiff(entry),
+            Some("aiff") | Some("aif") => process_aiff(entry),
             Some("mp3") => process_mp3(entry),
             _ => {
                 continue;
