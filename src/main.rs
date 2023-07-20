@@ -1,56 +1,37 @@
-use std::fs::File;
-use std::io::Read;
-
+use std::fs;
 use std::time::Instant;
 
-#[derive(Debug)]
-struct Chunk {
-    id: String,
-    size: usize,
+mod tag_processing;
+use tag_processing::*;
+
+fn get_file_extension(entry: &fs::DirEntry) -> Option<String> {
+    return match entry.path().extension() {
+        Some(extension) => Some(extension.to_string_lossy().to_lowercase()),
+        _ => None,
+    };
 }
 
-fn read_aiff_chunk(data: &Vec<u8>, pos: usize) -> Result<Chunk, Box<dyn std::error::Error>> {
-    let id: String = String::from_utf8(data[pos..pos + 4].to_vec())?;
-    let size: usize = i32::from_be_bytes(data[pos + 4..pos + 8].try_into()?) as usize;
-
-    Ok(Chunk { id, size })
-}
-
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let start_time = Instant::now();
+    let entries = fs::read_dir("/Users/leopnt/Music/TCOTC").unwrap();
 
-    let mut file = File::open("/Users/leopnt/Music/TCOTC/01 View Source.aiff")?;
-    let mut data = Vec::new();
-    file.read_to_end(&mut data)?;
+    for entry in entries {
+        let entry = entry.as_ref().unwrap();
 
-    let mut cursor: usize = 0;
-
-    loop {
-        if cursor >= data.len() {
-            println!("Cursor reached EOF");
-            break;
-        }
-
-        let chunk: Chunk = read_aiff_chunk(&data, cursor).unwrap();
-        println!("cursor: {} {} {}", cursor, chunk.id, chunk.size);
-
-        match chunk.id.as_str() {
-            "FORM" => cursor += 12, // FORM is a container chunk, we jump to the first data byte of this chunk
-            "COMT" => cursor += 8 + chunk.size,
-            "COMM" => cursor += 8 + chunk.size,
-            "SSND" => cursor += 8 + chunk.size,
-            "ID3 " => {
-                println!("Found ID3 Tag!");
-                let elapsed_time = start_time.elapsed();
-                println!("Seeking ID3 took {:?}", elapsed_time);
-                break;
-            }
+        match get_file_extension(entry).as_deref() {
+            Some("aiff") => process_aiff(entry),
+            Some("aif") => process_aiff(entry),
+            Some("mp3") => process_mp3(entry),
             _ => {
-                println!("Unknown identifier");
-                break;
+                continue;
             }
         }
+
+        println!("Name: {}", entry.path().clone().display());
     }
+
+    let elapsed_time = start_time.elapsed();
+    println!("Program took {:?}", elapsed_time);
 
     Ok(())
 }
