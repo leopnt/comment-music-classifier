@@ -16,6 +16,17 @@ impl fmt::Display for CustomCommentParseError {
 
 impl Error for CustomCommentParseError {}
 
+#[derive(Debug)]
+pub struct CustomCommentEmptyError;
+
+impl fmt::Display for CustomCommentEmptyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Empty error for comment")
+    }
+}
+
+impl Error for CustomCommentEmptyError {}
+
 fn parse_custom_comment(comment: &String) -> Result<Vec<String>, Box<dyn Error>> {
     let regex_pattern = r"^\d,[a-z;]+$";
     let regex = Regex::new(regex_pattern).unwrap();
@@ -55,6 +66,10 @@ impl Track {
             parsed_comment.sort();
 
             custom_comment = parsed_comment.join("");
+        }
+
+        if custom_comment.is_empty() {
+            return Err(Box::new(CustomCommentEmptyError));
         }
 
         let src_path = "".to_string();
