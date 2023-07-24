@@ -75,7 +75,9 @@ pub struct Track {
 
 impl Track {
     pub fn from_pathbuf(source_path: PathBuf) -> Result<Self, Box<dyn Error>> {
-        let file_extension = get_file_extension(&source_path).unwrap();
+        let file_extension = get_file_extension(&source_path).ok_or(Box::new(FileExtensionNotSupportedError {
+            extension: "".to_string()
+        }))?;
 
         let tag = match file_extension.as_str() {
             "aiff" | "aif" => Tag::read_from_aiff_path(&source_path),
