@@ -2,6 +2,7 @@ use id3::{Tag, TagLike};
 use regex::Regex;
 use std::error::Error;
 use std::fmt;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct CustomCommentParseError {
@@ -53,10 +54,15 @@ pub struct Track {
     pub artist: String,
     pub custom_comment: String,
     pub file_extension: String,
+    pub source_path: PathBuf,
 }
 
 impl Track {
-    pub fn from(tag: &Tag, file_extension: String) -> Result<Self, Box<dyn Error>> {
+    pub fn from(
+        tag: &Tag,
+        file_extension: String,
+        source_path: PathBuf,
+    ) -> Result<Self, Box<dyn Error>> {
         let title = tag.title().ok_or("No title ID3 tag found")?.to_string();
         let artist = tag.artist().ok_or("No artist ID3 tag found")?.to_string();
 
@@ -76,7 +82,8 @@ impl Track {
             title,
             artist,
             custom_comment,
-            file_extension
+            file_extension,
+            source_path,
         })
     }
 }
