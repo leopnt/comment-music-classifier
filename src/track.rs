@@ -64,6 +64,14 @@ fn parse_custom_comment(comment: &String) -> Result<Vec<String>, Box<dyn Error>>
     Ok(result)
 }
 
+fn is_illegal_filename_char(c: char) -> bool {
+    c == '/' || c == '<' || c == '>' || c == ':' || c == '\\' || c == '|' || c == '?' || c == '*'
+}
+
+fn sanitize_filename(filename: &str) -> String {
+    filename.replace(|c: char| is_illegal_filename_char(c), "_")
+}
+
 #[derive(Debug, Clone)]
 pub struct Track {
     title: String,
@@ -75,9 +83,10 @@ pub struct Track {
 
 impl Track {
     pub fn from_pathbuf(source_path: PathBuf) -> Result<Self, Box<dyn Error>> {
-        let file_extension = get_file_extension(&source_path).ok_or(Box::new(FileExtensionNotSupportedError {
-            extension: "".to_string()
-        }))?;
+        let file_extension =
+            get_file_extension(&source_path).ok_or(Box::new(FileExtensionNotSupportedError {
+                extension: "".to_string(),
+            }))?;
 
         let tag = match file_extension.as_str() {
             "aiff" | "aif" => Tag::read_from_aiff_path(&source_path),
@@ -114,9 +123,12 @@ impl Track {
     }
 
     pub fn build_custom_filename(&self) -> String {
-        format!(
-            "{} {} - {}.{}",
-            self.custom_comment, self.title, self.artist, self.file_extension
+        sanitize_filename(
+            &format!(
+                "{} {} - {}.{}",
+                self.custom_comment, self.title, self.artist, self.file_extension
+            )
+            .to_string(),
         )
     }
 
@@ -159,5 +171,18 @@ impl PartialEq for Track {
         let same_artist = self.artist.to_lowercase() == other.artist.to_lowercase();
 
         same_title && same_artist
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::sanitize_filename;
+
+    #[test]
+    fn test_sanitize_path() {
+        assert_eq!(
+            "2af Title - Super Megà _ Artist.aiff",
+            sanitize_filename("2af Title - Super Megà / Artist.aiff")
+        );
     }
 }
