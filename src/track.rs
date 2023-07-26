@@ -74,11 +74,11 @@ fn sanitize_filename(filename: &str) -> String {
 
 #[derive(Debug, Clone)]
 pub struct Track {
-    title: String,
-    artist: String,
-    custom_comment: String,
-    file_extension: String,
-    source_path: PathBuf,
+    pub title: String,
+    pub artist: String,
+    pub custom_comment: String,
+    pub file_extension: String,
+    pub source_path: PathBuf,
 }
 
 impl Track {
@@ -163,20 +163,36 @@ impl Track {
             }
         }
     }
+
+    pub fn move_to_folder(&self, destination_folder: &PathBuf) {
+        let source_file = self.source_path.clone();
+
+        // Extract the source filename from the path
+        let source_filename = Path::new(&source_file)
+            .file_name()
+            .expect("Invalid source file path")
+            .to_str()
+            .expect("Invalid source file name")
+            .to_string();
+
+        let destination_file = PathBuf::from(destination_folder).join(source_filename);
+
+        match std::fs::rename(&source_file, &destination_file) {
+            Ok(_) => println!("Moved: {:?} to {:?}", source_file, destination_folder),
+            Err(e) => eprintln!("Failed to move: {:?}. Error: {}", destination_file, e),
+        }
+    }
 }
 
 impl PartialEq for Track {
     fn eq(&self, other: &Self) -> bool {
-        let same_title = self.title.to_lowercase() == other.title.to_lowercase();
-        let same_artist = self.artist.to_lowercase() == other.artist.to_lowercase();
-
-        same_title && same_artist
+        self.build_custom_filename() == other.build_custom_filename()
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::sanitize_filename;
+    use super::*;
 
     #[test]
     fn test_sanitize_path() {
@@ -184,5 +200,36 @@ mod test {
             "2af Title - Super Megà _ Artist.aiff",
             sanitize_filename("2af Title - Super Megà / Artist.aiff")
         );
+    }
+
+    #[test]
+    fn test_track_partialeq() {
+        let track_a = Track {
+            title: "title_a".to_string(),
+            artist: "artist_a".to_string(),
+            custom_comment: "3abc".to_string(),
+            file_extension: "aiff".to_string(),
+            source_path: std::path::PathBuf::from("path/to/a"),
+        };
+
+        let track_a_same = Track {
+            title: "title_a".to_string(),
+            artist: "artist_a".to_string(),
+            custom_comment: "3abc".to_string(),
+            file_extension: "aiff".to_string(),
+            source_path: std::path::PathBuf::from("path/to/c/a"),
+        };
+
+        let track_c = Track {
+            title: "title_c".to_string(),
+            artist: "artist_a".to_string(),
+            custom_comment: "3abc".to_string(),
+            file_extension: "aiff".to_string(),
+            source_path: std::path::PathBuf::from("path/to/c"),
+        };
+
+        assert_eq!(track_a, track_a_same);
+
+        assert_ne!(track_a, track_c);
     }
 }
