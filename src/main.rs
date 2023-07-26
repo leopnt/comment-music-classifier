@@ -37,8 +37,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Found {} valid source tracks", source_tracks.len());
 
+    let mut counter_copied = 0;
     for track in source_tracks.iter() {
         track.copy_to_target_paths(target_folder);
+
+        counter_copied += 1;
+        let elapsed_time = start_time.elapsed();
+        println!(
+            "{}/{} copied. {:?}s elapsed",
+            counter_copied,
+            source_tracks.len(),
+            elapsed_time
+        );
     }
 
     let elapsed_time = start_time.elapsed();
