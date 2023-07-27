@@ -1,15 +1,6 @@
 # OS
 .DS_Store
 
-# python
-env
+# Added by cargo
 
-# Music folders
-TCOTC
-TCOTC_SORTED
-
-# Audio Files
-*.aif
-*.aiff
-*.mp3
-*.m4a
+/target
