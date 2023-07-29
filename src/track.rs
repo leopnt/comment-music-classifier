@@ -21,26 +21,26 @@ impl fmt::Display for CustomCommentParseError {
 }
 
 #[derive(Debug)]
-pub struct CustomCommentEmptyError;
+pub struct ValidCommentNotFoundError;
 
-impl Error for CustomCommentEmptyError {}
+impl Error for ValidCommentNotFoundError {}
+
+impl fmt::Display for ValidCommentNotFoundError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Empty error for comment")
+    }
+}
 
 #[derive(Debug)]
 pub struct FileExtensionNotSupportedError {
     extension: String,
 }
 
+impl Error for FileExtensionNotSupportedError {}
+
 impl fmt::Display for FileExtensionNotSupportedError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "File extension not supported: {}", self.extension)
-    }
-}
-
-impl Error for FileExtensionNotSupportedError {}
-
-impl fmt::Display for CustomCommentEmptyError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Empty error for comment")
     }
 }
 
@@ -103,14 +103,15 @@ impl Track {
 
         let mut custom_comment = "".to_string();
         for comment in tag.comments() {
-            let mut parsed_comment = parse_custom_comment(&comment.text)?;
-            parsed_comment.sort();
-
-            custom_comment = parsed_comment.join("");
+            if let Ok(parsed_comment) = parse_custom_comment(&comment.text).as_mut() {
+                parsed_comment.sort();
+                custom_comment = parsed_comment.join("");
+                break;
+            }
         }
 
         if custom_comment.is_empty() {
-            return Err(Box::new(CustomCommentEmptyError));
+            return Err(Box::new(ValidCommentNotFoundError));
         }
 
         Ok(Track {
