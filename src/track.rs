@@ -90,6 +90,7 @@ impl Track {
 
         let tag = match file_extension.as_str() {
             "aiff" | "aif" => Tag::read_from_aiff_path(&source_path),
+            "wav" => Tag::read_from_wav_path(&source_path),
             "mp3" => Tag::read_from_path(&source_path),
             extension => {
                 return Err(Box::new(FileExtensionNotSupportedError {
