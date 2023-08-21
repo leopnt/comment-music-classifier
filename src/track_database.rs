@@ -10,7 +10,13 @@ pub fn build_track_database(entries: fs::ReadDir) -> Vec<Track> {
 
         if entry.path().is_dir() {
             // If the entry is a directory, recursively call the function
-            let sub_entries = fs::read_dir(entry.path()).expect("Failed to read directory");
+            let sub_entries = fs::read_dir(&entry.path()).expect(
+                &format!(
+                    "Failed to read directory: {}",
+                    entry.path().to_string_lossy()
+                )
+                .to_string(),
+            );
             let sub_tracks = build_track_database(sub_entries);
             tracks.extend(sub_tracks);
         } else if let Ok(track) = Track::from_pathbuf(entry.path()) {
