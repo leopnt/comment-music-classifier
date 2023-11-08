@@ -5,26 +5,15 @@ Allows fast live-searching of music for DJs.
 
 ## Why
 
-Music is hard to classify. But it's useful to take the time to do it properly
-when mixing music live. Indeed, it makes it easier to stay in a more coherent DJ
-set while still having a dense Music library of various genres. Since some gears
-can display only 3 tracks at a time on the screen (e.g. CDJ 850), it can be very
-long to scroll. Moreover, it sometimes doesn't display the cover, which helps to
-remember the track's mood. We don't have that time when doing live performance
-as we have to deal with many other time-consuming challenges such as identifying
-the crowd's mood, beatmatching, making a soft selection for the next DJ and so
-on.
+Because CDJ-850 screens are extra-small and I can't easily find similar tracks on it.
 
-You can tag your tracks in well known DJ pieces of software, but it's
-proprietary and not garantied to work on every gear. Plus if you want to move to
-another software in the future, you are stuck on the software because of the
-time you spent on those tags. Yet since we use the comment section of ID3 tags
-here, `comment-music-classifier` is compatible with any DJ software by sorting
-tracks by `comment`.
+![CDJ-850 Browse screen](.github/cdj-850-browse.jpg)
 
 ## Solution
 
-Tag your tracks in the comment section. It will copy it in associated folders
+![comment music classifier overview](.github/comment_music_classifier_overview.png)
+
+Tag your tracks in the comment section (with software like kid3). It will copy it in associated folders
 (see instructions for details). The copied track file name is renamed with the
 tag at the beggining. So similar tracks are closed to each other when scrolling
 (thanks to sorting by file name).
