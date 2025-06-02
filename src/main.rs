@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         counter_copied += 1;
         let elapsed_time = start_time.elapsed();
         println!(
-            "{}/{} copied. {:?}s elapsed",
+            "{}/{} copied. {:.1?} elapsed",
             counter_copied,
             source_tracks.len(),
             elapsed_time
@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let elapsed_time = start_time.elapsed();
-    println!("Program took {:?}", elapsed_time);
+    println!("Program took {:.1?}", elapsed_time);
 
     Ok(())
 }
